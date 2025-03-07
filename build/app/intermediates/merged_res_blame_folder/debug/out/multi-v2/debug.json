@@ -3786,6 +3786,23 @@
                     }
                 },
                 {
+                    "source": "/Users/devanshu/latest/stock_market/build/app/generated/res/google-services/debug/values/values.xml",
+                    "from": {
+                        "startLines": "2,3,4,5,6,7",
+                        "startColumns": "4,4,4,4,4,4",
+                        "startOffsets": "55,137,241,350,470,580",
+                        "endColumns": "81,103,108,119,109,78",
+                        "endOffsets": "132,236,345,465,575,654"
+                    },
+                    "to": {
+                        "startLines": "193,194,195,196,197,198",
+                        "startColumns": "4,4,4,4,4,4",
+                        "startOffsets": "11786,11868,11972,12081,12201,12311",
+                        "endColumns": "81,103,108,119,109,78",
+                        "endOffsets": "11863,11967,12076,12196,12306,12385"
+                    }
+                },
+                {
                     "source": "/Users/devanshu/.gradle/caches/transforms-3/f8ec00f3fcc9d3a9a9c66e73a873b76c/transformed/jetified-window-1.2.0/res/values/values.xml",
                     "from": {
                         "startLines": "2,3,9,17,25,37,43,49,50,51,52,53,54,55,61,66,74,89",
@@ -3877,6 +3894,25 @@
                     }
                 },
                 {
+                    "source": "/Users/devanshu/latest/stock_market/android/app/src/main/res/values/styles.xml",
+                    "from": {
+                        "startLines": "3,14",
+                        "startColumns": "4,4",
+                        "startOffsets": "173,818",
+                        "endLines": "7,16",
+                        "endColumns": "12,12",
+                        "endOffsets": "476,982"
+                    },
+                    "to": {
+                        "startLines": "200,204",
+                        "startColumns": "4,4",
+                        "startOffsets": "12461,12642",
+                        "endLines": "203,206",
+                        "endColumns": "12,12",
+                        "endOffsets": "12637,12806"
+                    }
+                },
+                {
                     "source": "/Users/devanshu/.gradle/caches/transforms-3/09eb6fc27cfb744ce1fc62ab368efa9a/transformed/jetified-activity-1.8.1/res/values/values.xml",
                     "from": {
                         "startLines": "2,3",
@@ -3908,23 +3944,6 @@
                         "startOffsets": "8272,10210",
                         "endColumns": "67,166",
                         "endOffsets": "8335,10372"
-                    }
-                },
-                {
-                    "source": "/Users/devanshu/workspace/stock_market/build/app/generated/res/google-services/debug/values/values.xml",
-                    "from": {
-                        "startLines": "2,3,4,5,6,7",
-                        "startColumns": "4,4,4,4,4,4",
-                        "startOffsets": "55,137,241,350,470,580",
-                        "endColumns": "81,103,108,119,109,78",
-                        "endOffsets": "132,236,345,465,575,654"
-                    },
-                    "to": {
-                        "startLines": "193,194,195,196,197,198",
-                        "startColumns": "4,4,4,4,4,4",
-                        "startOffsets": "11786,11868,11972,12081,12201,12311",
-                        "endColumns": "81,103,108,119,109,78",
-                        "endOffsets": "11863,11967,12076,12196,12306,12385"
                     }
                 },
                 {
@@ -4012,25 +4031,6 @@
                         "startOffsets": "8001",
                         "endColumns": "42",
                         "endOffsets": "8039"
-                    }
-                },
-                {
-                    "source": "/Users/devanshu/workspace/stock_market/android/app/src/main/res/values/styles.xml",
-                    "from": {
-                        "startLines": "3,14",
-                        "startColumns": "4,4",
-                        "startOffsets": "173,818",
-                        "endLines": "7,16",
-                        "endColumns": "12,12",
-                        "endOffsets": "476,982"
-                    },
-                    "to": {
-                        "startLines": "200,204",
-                        "startColumns": "4,4",
-                        "startOffsets": "12461,12642",
-                        "endLines": "203,206",
-                        "endColumns": "12,12",
-                        "endOffsets": "12637,12806"
                     }
                 }
             ]
@@ -5868,7 +5868,7 @@
             "outputFile": "com.example.stock_market.app-merged_res-35:/values-night-v8_values-night-v8.arsc.flat",
             "map": [
                 {
-                    "source": "/Users/devanshu/workspace/stock_market/android/app/src/main/res/values-night/styles.xml",
+                    "source": "/Users/devanshu/latest/stock_market/android/app/src/main/res/values-night/styles.xml",
                     "from": {
                         "startLines": "3,14",
                         "startColumns": "4,4",

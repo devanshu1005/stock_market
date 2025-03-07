@@ -1,0 +1,1 @@
+ /Users/devanshu/latest/stock_market/.dart_tool/flutter_build/cb62a3a5a8bf9205e2841d4973cd9569/native_assets.yaml: 
