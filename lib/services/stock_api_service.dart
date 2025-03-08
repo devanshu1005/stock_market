@@ -1,5 +1,7 @@
 import 'dart:convert';
+import 'dart:async';
 import 'package:http/http.dart' as http;
+import 'dart:math';
 
 class StockApiService {
   static const String apiKey = 'JEA4DZIJGNCLAPZC';
@@ -63,4 +65,24 @@ class StockApiService {
     {'symbol': 'V', 'name': 'Visa Inc.'},
   ];
 }
+
+  // Function to simulate real-time stock price updates
+  Stream<Map<String, dynamic>> getRealTimeStockUpdates(String symbol) async* {
+    Random random = Random();
+    double lastPrice = random.nextDouble() * 1000; // Initial random price
+
+    while (true) {
+      await Future.delayed(Duration(seconds: 2)); // Simulate updates every 2s
+
+      double priceChange = (random.nextDouble() * 10 - 5); // Random change (-5 to +5)
+      lastPrice += priceChange;
+
+      yield {
+        "Global Quote": {
+          "01. symbol": symbol,
+          "05. price": lastPrice.toStringAsFixed(2),
+        }
+      };
+    }
+  }
 }
