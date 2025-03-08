@@ -1,6 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'home_screen.dart';
+import 'user_details_screen.dart';
 
 class SignupScreen extends StatefulWidget {
   @override
@@ -14,13 +14,24 @@ class _SignupScreenState extends State<SignupScreen> {
 
   void _signup() async {
     try {
-      await _auth.createUserWithEmailAndPassword(
+      UserCredential userCredential =
+          await _auth.createUserWithEmailAndPassword(
         email: _emailController.text.trim(),
         password: _passwordController.text.trim(),
       );
-      Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => HomeScreen()));
+
+      String userId = userCredential.user!.uid;
+
+      // Navigate to UserDetailsScreen to collect additional user data
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+            builder: (context) => UserDetailsScreen(userId: userId)),
+      );
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Signup Failed: ${e.toString()}")));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Signup Failed: ${e.toString()}")),
+      );
     }
   }
 
