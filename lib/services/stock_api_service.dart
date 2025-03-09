@@ -5,7 +5,8 @@ import 'dart:math';
 
 class StockApiService {
   // static const String apiKey = 'JEA4DZIJGNCLAPZC';
-  static const String apiKey = 'Q8UMH5T65ZZIG1ON';
+  // static const String apiKey = 'Q8UMH5T65ZZIG1ON';
+  static const String apiKey = '7RKYYRCVCDCIVL08';
   static const String baseUrl = 'https://www.alphavantage.co/query';
 
   final Map<String, dynamic> _cache = {};
