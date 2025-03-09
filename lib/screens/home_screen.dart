@@ -1,9 +1,10 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:stock_market/providers/stock_provider.dart';
 import 'package:stock_market/screens/login_screen.dart';
 import 'package:stock_market/screens/profile_screen.dart';
 import 'package:stock_market/screens/stock_details_screen.dart';
-import 'package:stock_market/services/stock_api_service.dart';
 
 class HomeScreen extends StatefulWidget {
   @override
@@ -11,58 +12,365 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  final _stockService = StockApiService();
   final _searchController = TextEditingController();
-  List<Map<String, String>> searchResults = [];
-  List<Map<String, String>> trendingStocks = [];
+  bool _isSearching = false;
 
   @override
   void initState() {
     super.initState();
-    _fetchTrendingStocks();
+    final stockProvider = Provider.of<StockProvider>(context, listen: false);
+    stockProvider.fetchTrendingStocks();
   }
 
-  Future<void> _fetchTrendingStocks() async {
-    final results =
-        await _stockService.getTrendingStocks(); // Fetch trending stocks
-    setState(() {
-      trendingStocks = results;
-      searchResults = results; // Initially display trending stocks
-    });
-  }
+  @override
+  Widget build(BuildContext context) {
+    final stockProvider = Provider.of<StockProvider>(context);
 
-  Future<void> searchStocks(String query) async {
-    if (query.isNotEmpty) {
-      final results = await _stockService.searchStockByName(query);
-      setState(() {
-        searchResults = results;
-      });
-    } else {
-      setState(() {
-        searchResults =
-            trendingStocks; // Restore trending stocks when search is empty
-      });
-    }
-  }
-
-  Future<void> fetchStockDetails(String symbol) async {
-    final stock = await _stockService.fetchStockData(symbol);
-    if (stock != null) {
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => StockDetailScreen(stock: stock, stockSymbol: symbol,),
-        ),
-      );
-    }
-  }
-
-  final FirebaseAuth _auth = FirebaseAuth.instance;
-
-  void _logout(BuildContext context) async {
-    await _auth.signOut();
-    Navigator.pushReplacement(
-        context, MaterialPageRoute(builder: (context) => LoginScreen()));
+    return Scaffold(
+      body: Stack(
+        children: [
+          // Background gradient (matching user details screen)
+          Container(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [
+                  Theme.of(context).primaryColor.withOpacity(0.8),
+                  Theme.of(context).colorScheme.secondary.withOpacity(0.6),
+                ],
+              ),
+            ),
+          ),
+          
+          SafeArea(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Custom app bar
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        "Stock Market",
+                        style: TextStyle(
+                          fontSize: 28,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
+                      ),
+                      Row(
+                        children: [
+                          // Container(
+                          //   decoration: BoxDecoration(
+                          //     color: Colors.white.withOpacity(0.2),
+                          //     shape: BoxShape.circle,
+                          //   ),
+                          //   child: IconButton(
+                          //     icon: Icon(Icons.notifications_outlined, color: Colors.white),
+                          //     onPressed: () {
+                          //       // Notification functionality
+                          //     },
+                          //   ),
+                          // ),
+                          SizedBox(width: 8),
+                          GestureDetector(
+                            onTap: () {
+                              _showBottomSheet(context);
+                            },
+                            child: Container(
+                              height: 40,
+                              width: 40,
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                shape: BoxShape.circle,
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black.withOpacity(0.1),
+                                    spreadRadius: 1,
+                                    blurRadius: 3,
+                                    offset: Offset(0, 2),
+                                  ),
+                                ],
+                              ),
+                              child: Icon(
+                                Icons.list,
+                                color: Theme.of(context).primaryColor,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+                
+                // Search Section
+                Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        "Discover Stocks",
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w500,
+                          color: Colors.white.withOpacity(0.8),
+                        ),
+                      ),
+                      SizedBox(height: 12),
+                      Container(
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(12),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.05),
+                              spreadRadius: 1,
+                              blurRadius: 10,
+                              offset: Offset(0, 4),
+                            ),
+                          ],
+                        ),
+                        child: TextField(
+                          controller: _searchController,
+                          onChanged: (query) {
+                            setState(() {
+                              _isSearching = query.isNotEmpty;
+                            });
+                            stockProvider.searchStocks(query);
+                          },
+                          decoration: InputDecoration(
+                            hintText: 'Search stocks by name or symbol...',
+                            prefixIcon: Icon(Icons.search, color: Theme.of(context).primaryColor),
+                            suffixIcon: _isSearching
+                                ? IconButton(
+                                    icon: Icon(Icons.clear, color: Colors.grey),
+                                    onPressed: () {
+                                      _searchController.clear();
+                                      setState(() {
+                                        _isSearching = false;
+                                      });
+                                      stockProvider.fetchTrendingStocks();
+                                    },
+                                  )
+                                : null,
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: BorderSide.none,
+                            ),
+                            filled: true,
+                            fillColor: Colors.white,
+                            contentPadding: EdgeInsets.symmetric(vertical: 16),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                
+                // Main Content
+                Expanded(
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.only(
+                        topLeft: Radius.circular(30),
+                        topRight: Radius.circular(30),
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.05),
+                          spreadRadius: 1,
+                          blurRadius: 10,
+                          offset: Offset(0, -5),
+                        ),
+                      ],
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.fromLTRB(24, 24, 24, 16),
+                          child: Text(
+                            _isSearching ? "Search Results" : "Trending Stocks",
+                            style: TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.black87,
+                            ),
+                          ),
+                        ),
+                        Expanded(
+                          child: stockProvider.searchResults.isNotEmpty
+                              ? ListView.builder(
+                                  padding: EdgeInsets.symmetric(horizontal: 16),
+                                  itemCount: stockProvider.searchResults.length,
+                                  itemBuilder: (context, index) {
+                                    final stock = stockProvider.searchResults[index];
+                            
+                                    if (stock['symbol'] == 'N/A') {
+                                      return Padding(
+                                        padding: const EdgeInsets.symmetric(vertical: 8.0),
+                                        child: Container(
+                                          padding: EdgeInsets.all(16),
+                                          decoration: BoxDecoration(
+                                            color: Colors.red.shade50,
+                                            borderRadius: BorderRadius.circular(12),
+                                          ),
+                                          child: Text(
+                                            stock['name']!,
+                                            style: TextStyle(
+                                              color: Colors.red,
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                          ),
+                                        ),
+                                      );
+                                    }
+                            
+                                    // Generate random color and trend data for demo purposes
+                                    final bool isPositive = index % 3 != 0;
+                                    final double changePercent = (index % 5 + 1) * (isPositive ? 1.2 : -0.8);
+                                    
+                                    return Padding(
+                                      padding: const EdgeInsets.symmetric(vertical: 8.0),
+                                      child: InkWell(
+                                        onTap: () {
+                                          stockProvider.fetchStockDetails(stock['symbol']!);
+                                          Navigator.push(
+                                            context,
+                                            MaterialPageRoute(
+                                              builder: (context) => StockDetailScreen(stockSymbol: stock['symbol']!),
+                                            ),
+                                          );
+                                        },
+                                        borderRadius: BorderRadius.circular(12),
+                                        child: Container(
+                                          padding: EdgeInsets.all(16),
+                                          decoration: BoxDecoration(
+                                            color: Colors.grey.shade50,
+                                            borderRadius: BorderRadius.circular(12),
+                                            boxShadow: [
+                                              BoxShadow(
+                                                color: Colors.black.withOpacity(0.03),
+                                                spreadRadius: 1,
+                                                blurRadius: 5,
+                                                offset: Offset(0, 2),
+                                              ),
+                                            ],
+                                          ),
+                                          child: Row(
+                                            children: [
+                                              Container(
+                                                height: 50,
+                                                width: 50,
+                                                decoration: BoxDecoration(
+                                                  color: Theme.of(context).primaryColor.withOpacity(0.1),
+                                                  borderRadius: BorderRadius.circular(12),
+                                                ),
+                                                child: Center(
+                                                  child: Text(
+                                                    stock['symbol']!.length > 2
+                                                        ? stock['symbol']!.substring(0, 2)
+                                                        : stock['symbol']!,
+                                                    style: TextStyle(
+                                                      fontWeight: FontWeight.bold,
+                                                      color: Theme.of(context).primaryColor,
+                                                      fontSize: 18,
+                                                    ),
+                                                  ),
+                                                ),
+                                              ),
+                                              SizedBox(width: 16),
+                                              Expanded(
+                                                child: Column(
+                                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                                  children: [
+                                                    Text(
+                                                      stock['symbol']!,
+                                                      style: TextStyle(
+                                                        fontWeight: FontWeight.bold,
+                                                        fontSize: 16,
+                                                      ),
+                                                    ),
+                                                    SizedBox(height: 4),
+                                                    Text(
+                                                      stock['name']!,
+                                                      maxLines: 1,
+                                                      overflow: TextOverflow.ellipsis,
+                                                      style: TextStyle(
+                                                        color: Colors.grey.shade600,
+                                                        fontSize: 14,
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ),
+                                              ),
+                                              SizedBox(width: 16),
+                                              // Column(
+                                              //   crossAxisAlignment: CrossAxisAlignment.end,
+                                              //   children: [
+                                              //     Text(
+                                              //       "\Rs.${(100 + index * 5).toString()}",
+                                              //       style: TextStyle(
+                                              //         fontWeight: FontWeight.bold,
+                                              //         fontSize: 16,
+                                              //       ),
+                                              //     ),
+                                              //     SizedBox(height: 4),
+                                              //     Text(
+                                              //       "${changePercent.toStringAsFixed(2)}%",
+                                              //       style: TextStyle(
+                                              //         color: isPositive ? Colors.green : Colors.red,
+                                              //         fontWeight: FontWeight.w500,
+                                              //       ),
+                                              //     ),
+                                              //   ],
+                                              // ),
+                                            ],
+                                          ),
+                                        ),
+                                      ),
+                                    );
+                                  },
+                                )
+                              : Center(
+                                  child: Column(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Icon(
+                                        Icons.search_off,
+                                        size: 60,
+                                        color: Colors.grey.shade400,
+                                      ),
+                                      SizedBox(height: 16),
+                                      Text(
+                                        _isSearching
+                                            ? "No stocks found"
+                                            : "Loading trending stocks...",
+                                        style: TextStyle(
+                                          color: Colors.grey.shade600,
+                                          fontSize: 16,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
   }
 
   void _showBottomSheet(BuildContext context) {
@@ -73,13 +381,37 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
       builder: (context) {
         return Container(
-          padding: EdgeInsets.all(16),
-          height: 150,
+          padding: EdgeInsets.all(24),
           child: Column(
+            mainAxisSize: MainAxisSize.min,
             children: [
+              Container(
+                height: 5,
+                width: 60,
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade300,
+                  borderRadius: BorderRadius.circular(5),
+                ),
+              ),
+              SizedBox(height: 24),
               ListTile(
-                leading: Icon(Icons.person),
-                title: Text("Profile"),
+                leading: Container(
+                  height: 40,
+                  width: 40,
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).primaryColor.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Icon(
+                    Icons.person_outline,
+                    color: Theme.of(context).primaryColor,
+                  ),
+                ),
+                title: Text(
+                  "Profile",
+                  style: TextStyle(fontWeight: FontWeight.w600, fontSize: 16),
+                ),
+                subtitle: Text("View and edit your profile"),
                 onTap: () {
                   Navigator.pop(context); // Close the sheet
                   Navigator.push(
@@ -88,11 +420,28 @@ class _HomeScreenState extends State<HomeScreen> {
                   );
                 },
               ),
+              Divider(height: 32),
               ListTile(
-                leading: Icon(Icons.logout),
-                title: Text("Logout"),
+                leading: Container(
+                  height: 40,
+                  width: 40,
+                  decoration: BoxDecoration(
+                    color: Colors.red.shade50,
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Icon(
+                    Icons.logout,
+                    color: Colors.red.shade400,
+                  ),
+                ),
+                title: Text(
+                  "Logout",
+                  style: TextStyle(fontWeight: FontWeight.w600, fontSize: 16),
+                ),
+                subtitle: Text("Sign out from your account"),
                 onTap: () => _logout(context),
               ),
+              SizedBox(height: 16),
             ],
           ),
         );
@@ -100,60 +449,9 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text("Stock Market Search"),
-        actions: [
-          IconButton(
-            icon: Icon(Icons.list),
-            onPressed: () {
-              _showBottomSheet(context);
-            },
-          ),
-        ],
-      ),
-      body: Column(
-        children: [
-          Padding(
-            padding: EdgeInsets.all(8.0),
-            child: TextField(
-              controller: _searchController,
-              decoration: InputDecoration(
-                hintText: 'Search stocks by name...',
-                border: OutlineInputBorder(),
-              ),
-              onChanged: searchStocks,
-            ),
-          ),
-          Expanded(
-            child: searchResults.isNotEmpty
-                ? ListView.builder(
-                    itemCount: searchResults.length,
-                    itemBuilder: (context, index) {
-                      final stock = searchResults[index];
-
-                      if (stock['symbol'] == 'N/A') {
-                        return ListTile(
-                          title: Text(stock['name']!,
-                              style: TextStyle(
-                                  color: Colors.red,
-                                  fontWeight: FontWeight.bold)),
-                        );
-                      }
-
-                      return ListTile(
-                        title: Text(stock['name']!),
-                        subtitle: Text(stock['symbol']!),
-                        onTap: () => fetchStockDetails(stock['symbol']!),
-                      );
-                    },
-                  )
-                : Center(child: Text('Loading trending stocks...')),
-          ),
-        ],
-      ),
-    );
+  void _logout(BuildContext context) async {
+    await FirebaseAuth.instance.signOut();
+    Navigator.pushReplacement(
+        context, MaterialPageRoute(builder: (context) => LoginScreen()));
   }
 }
