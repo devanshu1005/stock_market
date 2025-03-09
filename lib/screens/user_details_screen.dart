@@ -1,5 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:stock_market/screens/login_screen.dart';
 import 'home_screen.dart';
 
 class UserDetailsScreen extends StatefulWidget {
@@ -19,7 +21,8 @@ class _UserDetailsScreenState extends State<UserDetailsScreen> {
   bool _isLoading = false;
 
   void _saveUserDetails() async {
-    if (_nameController.text.trim().isEmpty || _phoneController.text.trim().isEmpty) {
+    if (_nameController.text.trim().isEmpty ||
+        _phoneController.text.trim().isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text("Please enter name and phone number"),
@@ -33,16 +36,34 @@ class _UserDetailsScreenState extends State<UserDetailsScreen> {
     setState(() => _isLoading = true);
 
     try {
-      await _firestore.collection("UserData").doc(widget.userId).set({
-        'name': _nameController.text.trim(),
-        'phone': _phoneController.text.trim(),
-        'address': _addressController.text.trim(),
-        'bio': _bioController.text.trim(),
-        'userId': widget.userId,
-        'createdAt': FieldValue.serverTimestamp(),
-      });
+      User? user = FirebaseAuth.instance.currentUser;
+      await user?.reload(); // Refresh user data
+      user = FirebaseAuth.instance.currentUser;
 
-      Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => HomeScreen()));
+      if (user != null && user.emailVerified) {
+        await _firestore.collection("UserData").doc(widget.userId).set({
+          'name': _nameController.text.trim(),
+          'phone': _phoneController.text.trim(),
+          'address': _addressController.text.trim(),
+          'bio': _bioController.text.trim(),
+          'userId': widget.userId,
+          'createdAt': FieldValue.serverTimestamp(),
+        });
+
+        Navigator.pushReplacement(
+            context, MaterialPageRoute(builder: (context) => HomeScreen()));
+      } else {
+        await user?.delete();
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text("Please verify your email before proceeding."),
+            backgroundColor: Colors.orange.shade400,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+        Navigator.pushReplacement(
+            context, MaterialPageRoute(builder: (context) => LoginScreen()));
+      }
     } catch (e) {
       setState(() => _isLoading = false);
       ScaffoldMessenger.of(context).showSnackBar(
@@ -72,7 +93,6 @@ class _UserDetailsScreenState extends State<UserDetailsScreen> {
               ),
             ),
           ),
-          
           SafeArea(
             child: SingleChildScrollView(
               child: Padding(
@@ -81,7 +101,6 @@ class _UserDetailsScreenState extends State<UserDetailsScreen> {
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     SizedBox(height: 40),
-                    
                     Container(
                       alignment: Alignment.center,
                       child: Stack(
@@ -107,30 +126,10 @@ class _UserDetailsScreenState extends State<UserDetailsScreen> {
                               color: Theme.of(context).primaryColor,
                             ),
                           ),
-                          Positioned(
-                            right: 0,
-                            bottom: 0,
-                            child: Container(
-                              height: 40,
-                              width: 40,
-                              decoration: BoxDecoration(
-                                color: Theme.of(context).primaryColor,
-                                shape: BoxShape.circle,
-                                border: Border.all(color: Colors.white, width: 2),
-                              ),
-                              child: Icon(
-                                Icons.camera_alt,
-                                color: Colors.white,
-                                size: 20,
-                              ),
-                            ),
-                          ),
                         ],
                       ),
                     ),
-                    
                     SizedBox(height: 30),
-                    
                     Text(
                       "Complete Your Profile",
                       style: TextStyle(
@@ -140,9 +139,7 @@ class _UserDetailsScreenState extends State<UserDetailsScreen> {
                       ),
                       textAlign: TextAlign.center,
                     ),
-                    
                     SizedBox(height: 8),
-                    
                     Text(
                       "Tell us a little about yourself",
                       style: TextStyle(
@@ -151,9 +148,7 @@ class _UserDetailsScreenState extends State<UserDetailsScreen> {
                       ),
                       textAlign: TextAlign.center,
                     ),
-                    
                     SizedBox(height: 40),
-                    
                     Container(
                       decoration: BoxDecoration(
                         color: Colors.white,
@@ -184,12 +179,11 @@ class _UserDetailsScreenState extends State<UserDetailsScreen> {
                                 ),
                                 filled: true,
                                 fillColor: Colors.grey.shade100,
-                                contentPadding: EdgeInsets.symmetric(vertical: 16),
+                                contentPadding:
+                                    EdgeInsets.symmetric(vertical: 16),
                               ),
                             ),
-                            
                             SizedBox(height: 16),
-                            
                             TextField(
                               controller: _phoneController,
                               keyboardType: TextInputType.phone,
@@ -203,12 +197,11 @@ class _UserDetailsScreenState extends State<UserDetailsScreen> {
                                 ),
                                 filled: true,
                                 fillColor: Colors.grey.shade100,
-                                contentPadding: EdgeInsets.symmetric(vertical: 16),
+                                contentPadding:
+                                    EdgeInsets.symmetric(vertical: 16),
                               ),
                             ),
-                            
                             SizedBox(height: 16),
-                            
                             TextField(
                               controller: _addressController,
                               style: TextStyle(fontSize: 16),
@@ -221,12 +214,11 @@ class _UserDetailsScreenState extends State<UserDetailsScreen> {
                                 ),
                                 filled: true,
                                 fillColor: Colors.grey.shade100,
-                                contentPadding: EdgeInsets.symmetric(vertical: 16),
+                                contentPadding:
+                                    EdgeInsets.symmetric(vertical: 16),
                               ),
                             ),
-                            
                             SizedBox(height: 16),
-                            
                             TextField(
                               controller: _bioController,
                               maxLines: 3,
@@ -244,12 +236,11 @@ class _UserDetailsScreenState extends State<UserDetailsScreen> {
                                 ),
                                 filled: true,
                                 fillColor: Colors.grey.shade100,
-                                contentPadding: EdgeInsets.symmetric(vertical: 16),
+                                contentPadding:
+                                    EdgeInsets.symmetric(vertical: 16),
                               ),
                             ),
-                            
                             SizedBox(height: 24),
-                            
                             ElevatedButton(
                               onPressed: _isLoading ? null : _saveUserDetails,
                               style: ElevatedButton.styleFrom(
@@ -266,7 +257,9 @@ class _UserDetailsScreenState extends State<UserDetailsScreen> {
                                       width: 20,
                                       child: CircularProgressIndicator(
                                         strokeWidth: 2,
-                                        valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                                        valueColor:
+                                            AlwaysStoppedAnimation<Color>(
+                                                Colors.white),
                                       ),
                                     )
                                   : Text(
@@ -281,26 +274,6 @@ class _UserDetailsScreenState extends State<UserDetailsScreen> {
                         ),
                       ),
                     ),
-                    
-                    SizedBox(height: 24),
-                    
-                    TextButton(
-                      onPressed: () {
-                        Navigator.pushReplacement(
-                          context, 
-                          MaterialPageRoute(builder: (context) => HomeScreen())
-                        );
-                      },
-                      child: Text(
-                        "Skip for now",
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 16,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                    ),
-                    
                     SizedBox(height: 24),
                   ],
                 ),

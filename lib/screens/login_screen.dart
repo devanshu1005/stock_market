@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_sign_in/google_sign_in.dart';
@@ -15,12 +16,22 @@ class _LoginScreenState extends State<LoginScreen> {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   bool _isLoading = false;
   bool _obscurePassword = true;
+  String? _emailError;
 
   void _login() async {
-    if (_emailController.text.trim().isEmpty ||
-        _passwordController.text.trim().isEmpty) {
+    String email = _emailController.text.trim();
+    String password = _passwordController.text.trim();
+
+    if (email.isEmpty || password.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text("Please enter both email and password")),
+      );
+      return;
+    }
+
+    if (!_isValidEmail(email)) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Please enter a valid email")),
       );
       return;
     }
@@ -29,8 +40,8 @@ class _LoginScreenState extends State<LoginScreen> {
 
     try {
       await _auth.signInWithEmailAndPassword(
-        email: _emailController.text.trim(),
-        password: _passwordController.text.trim(),
+        email: email,
+        password: password,
       );
       Navigator.pushReplacement(
           context, MaterialPageRoute(builder: (context) => HomeScreen()));
@@ -56,20 +67,37 @@ class _LoginScreenState extends State<LoginScreen> {
 
       if (googleUser == null) {
         setState(() => _isLoading = false);
-        return; 
+        return; // User canceled the login
       }
 
       final GoogleSignInAuthentication googleAuth =
           await googleUser.authentication;
-
       final AuthCredential credential = GoogleAuthProvider.credential(
         accessToken: googleAuth.accessToken,
         idToken: googleAuth.idToken,
       );
 
-      await _auth.signInWithCredential(credential);
-      Navigator.pushReplacement(
-          context, MaterialPageRoute(builder: (context) => HomeScreen()));
+      UserCredential userCredential =
+          await FirebaseAuth.instance.signInWithCredential(credential);
+      User? user = userCredential.user;
+
+      if (user != null) {
+        // Save user details to Firestore
+        final userDoc =
+            FirebaseFirestore.instance.collection('UserData').doc(user.uid);
+        await userDoc.set({
+          'uid': user.uid,
+          'name': user.displayName ?? '',
+          'email': user.email ?? '',
+          'photoURL': user.photoURL ?? '',
+          'createdAt': FieldValue.serverTimestamp(),
+        }, SetOptions(merge: true));
+
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => HomeScreen()),
+        );
+      }
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -78,6 +106,7 @@ class _LoginScreenState extends State<LoginScreen> {
           behavior: SnackBarBehavior.floating,
         ),
       );
+    } finally {
       setState(() => _isLoading = false);
     }
   }
@@ -105,7 +134,6 @@ class _LoginScreenState extends State<LoginScreen> {
               ),
             ),
           ),
-
           SafeArea(
             child: SingleChildScrollView(
               child: Padding(
@@ -114,7 +142,6 @@ class _LoginScreenState extends State<LoginScreen> {
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     SizedBox(height: 60),
-
                     Container(
                       alignment: Alignment.center,
                       child: Container(
@@ -139,9 +166,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                       ),
                     ),
-
                     SizedBox(height: 30),
-
                     Text(
                       "Welcome Back",
                       style: TextStyle(
@@ -151,9 +176,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                       textAlign: TextAlign.center,
                     ),
-
                     SizedBox(height: 8),
-
                     Text(
                       "Sign in to continue",
                       style: TextStyle(
@@ -162,9 +185,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                       textAlign: TextAlign.center,
                     ),
-
                     SizedBox(height: 40),
-
                     Container(
                       decoration: BoxDecoration(
                         color: Colors.white,
@@ -198,18 +219,10 @@ class _LoginScreenState extends State<LoginScreen> {
                                 fillColor: Colors.grey.shade100,
                                 contentPadding:
                                     EdgeInsets.symmetric(vertical: 16),
-                                errorText: _isValidEmail(_emailController.text)
-                                    ? null
-                                    : "Enter a valid email",
+                                errorText: _emailError, // Dynamic error message
                               ),
-                              onChanged: (value) {
-                                setState(
-                                    () {}); 
-                              },
                             ),
-
                             SizedBox(height: 16),
-
                             TextField(
                               controller: _passwordController,
                               obscureText: _obscurePassword,
@@ -240,13 +253,8 @@ class _LoginScreenState extends State<LoginScreen> {
                                     EdgeInsets.symmetric(vertical: 16),
                               ),
                             ),
-
                             SizedBox(height: 8),
-
-                          
-
                             SizedBox(height: 16),
-
                             ElevatedButton(
                               onPressed: _isLoading ? null : _login,
                               style: ElevatedButton.styleFrom(
@@ -280,9 +288,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                       ),
                     ),
-
                     SizedBox(height: 24),
-
                     Row(
                       children: [
                         Expanded(
@@ -303,9 +309,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                 Divider(color: Colors.white.withOpacity(0.5))),
                       ],
                     ),
-
                     SizedBox(height: 24),
-
                     ElevatedButton.icon(
                       onPressed: _isLoading ? null : _signInWithGoogle,
                       icon: _isLoading
@@ -331,9 +335,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         elevation: 1,
                       ),
                     ),
-
                     SizedBox(height: 24),
-
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
@@ -360,7 +362,6 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                       ],
                     ),
-
                     SizedBox(height: 24),
                   ],
                 ),

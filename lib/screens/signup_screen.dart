@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'user_details_screen.dart';
@@ -16,13 +17,17 @@ class _SignupScreenState extends State<SignupScreen> {
   bool _isLoading = false;
   bool _obscurePassword = true;
   bool _obscureConfirmPassword = true;
+  String? _emailError;
 
   void _signup() async {
-    if (_emailController.text.trim().isEmpty ||
-        _passwordController.text.trim().isEmpty) {
+    String email = _emailController.text.trim();
+    String password = _passwordController.text.trim();
+    String confirmPassword = _confirmPasswordController.text.trim();
+
+    if (email.isEmpty || password.isEmpty || confirmPassword.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text("Please enter both email and password"),
+          content: Text("Please fill all fields"),
           backgroundColor: Colors.red.shade400,
           behavior: SnackBarBehavior.floating,
         ),
@@ -30,7 +35,29 @@ class _SignupScreenState extends State<SignupScreen> {
       return;
     }
 
-    if (_passwordController.text != _confirmPasswordController.text) {
+    if (!_isValidEmail(email)) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text("Please enter a valid email"),
+          backgroundColor: Colors.red.shade400,
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+      return;
+    }
+
+    if (password.length < 6) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text("Password must be at least 6 characters long"),
+          backgroundColor: Colors.red.shade400,
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+      return;
+    }
+
+    if (password != confirmPassword) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text("Passwords do not match"),
@@ -46,17 +73,37 @@ class _SignupScreenState extends State<SignupScreen> {
     try {
       UserCredential userCredential =
           await _auth.createUserWithEmailAndPassword(
-        email: _emailController.text.trim(),
-        password: _passwordController.text.trim(),
+        email: email,
+        password: password,
       );
 
-      String userId = userCredential.user!.uid;
+       User? user = userCredential.user;
 
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(
-            builder: (context) => UserDetailsScreen(userId: userId)),
-      );
+      if (user != null) {
+        await user.sendEmailVerification(); 
+        await FirebaseFirestore.instance
+            .collection('UserData')
+            .doc(user.uid)
+            .set({
+          'email': user.email,
+          'uid': user.uid,
+          'createdAt': Timestamp.now(),
+        });
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text("Verification email sent. Please check your inbox."),
+            backgroundColor: Colors.green.shade400,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+              builder: (context) => UserDetailsScreen(userId: user.uid)),
+        );
+      }
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -65,6 +112,7 @@ class _SignupScreenState extends State<SignupScreen> {
           behavior: SnackBarBehavior.floating,
         ),
       );
+    } finally {
       setState(() => _isLoading = false);
     }
   }
@@ -92,7 +140,6 @@ class _SignupScreenState extends State<SignupScreen> {
               ),
             ),
           ),
-
           SafeArea(
             child: Padding(
               padding: const EdgeInsets.all(8.0),
@@ -102,7 +149,6 @@ class _SignupScreenState extends State<SignupScreen> {
               ),
             ),
           ),
-
           SafeArea(
             child: SingleChildScrollView(
               child: Padding(
@@ -111,7 +157,6 @@ class _SignupScreenState extends State<SignupScreen> {
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     SizedBox(height: 60),
-
                     Container(
                       alignment: Alignment.center,
                       child: Container(
@@ -136,9 +181,7 @@ class _SignupScreenState extends State<SignupScreen> {
                         ),
                       ),
                     ),
-
                     SizedBox(height: 30),
-
                     Text(
                       "Create Account",
                       style: TextStyle(
@@ -148,9 +191,7 @@ class _SignupScreenState extends State<SignupScreen> {
                       ),
                       textAlign: TextAlign.center,
                     ),
-
                     SizedBox(height: 8),
-
                     Text(
                       "Sign up to get started",
                       style: TextStyle(
@@ -159,9 +200,7 @@ class _SignupScreenState extends State<SignupScreen> {
                       ),
                       textAlign: TextAlign.center,
                     ),
-
                     SizedBox(height: 40),
-
                     Container(
                       decoration: BoxDecoration(
                         color: Colors.white,
@@ -195,18 +234,10 @@ class _SignupScreenState extends State<SignupScreen> {
                                 fillColor: Colors.grey.shade100,
                                 contentPadding:
                                     EdgeInsets.symmetric(vertical: 16),
-                                errorText: _isValidEmail(_emailController.text)
-                                    ? null
-                                    : "Enter a valid email",
+                                errorText: _emailError, // Dynamic error message
                               ),
-                              onChanged: (value) {
-                                setState(
-                                    () {}); 
-                              },
                             ),
-
                             SizedBox(height: 16),
-
                             TextField(
                               controller: _passwordController,
                               obscureText: _obscurePassword,
@@ -237,9 +268,7 @@ class _SignupScreenState extends State<SignupScreen> {
                                     EdgeInsets.symmetric(vertical: 16),
                               ),
                             ),
-
                             SizedBox(height: 16),
-
                             TextField(
                               controller: _confirmPasswordController,
                               obscureText: _obscureConfirmPassword,
@@ -271,9 +300,7 @@ class _SignupScreenState extends State<SignupScreen> {
                                     EdgeInsets.symmetric(vertical: 16),
                               ),
                             ),
-
                             SizedBox(height: 24),
-
                             ElevatedButton(
                               onPressed: _isLoading ? null : _signup,
                               style: ElevatedButton.styleFrom(
@@ -307,9 +334,7 @@ class _SignupScreenState extends State<SignupScreen> {
                         ),
                       ),
                     ),
-
                     SizedBox(height: 24),
-
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
@@ -332,7 +357,6 @@ class _SignupScreenState extends State<SignupScreen> {
                         ),
                       ],
                     ),
-
                     SizedBox(height: 24),
                   ],
                 ),
