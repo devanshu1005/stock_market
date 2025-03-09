@@ -14,7 +14,8 @@ class StockDetailScreen extends StatefulWidget {
   _StockDetailScreenState createState() => _StockDetailScreenState();
 }
 
-class _StockDetailScreenState extends State<StockDetailScreen> with SingleTickerProviderStateMixin {
+class _StockDetailScreenState extends State<StockDetailScreen>
+    with SingleTickerProviderStateMixin {
   late StreamSubscription<Map<String, dynamic>>? _stockStream;
   Map<String, dynamic>? _stockData;
   double? lastPrice;
@@ -32,7 +33,6 @@ class _StockDetailScreenState extends State<StockDetailScreen> with SingleTicker
     _tabController = TabController(length: 3, vsync: this);
     final stockProvider = Provider.of<StockProvider>(context, listen: false);
 
-    // Fetch initial stock details
     stockProvider.fetchStockDetails(widget.stockSymbol).then((_) {
       setState(() {
         _isLoading = false;
@@ -48,18 +48,21 @@ class _StockDetailScreenState extends State<StockDetailScreen> with SingleTicker
       setState(() {
         _isLoading = false;
         _hasError = true;
-        _errorMessage = 'Failed to load stock details. API limit may have been exceeded.';
+        _errorMessage =
+            'Failed to load stock details. API limit may have been exceeded.';
       });
     });
 
-    // Listen to real-time stock updates only if we have valid data
     try {
-      _stockStream = stockProvider.getRealTimeStockUpdates(widget.stockSymbol).listen((data) {
+      _stockStream = stockProvider
+          .getRealTimeStockUpdates(widget.stockSymbol)
+          .listen((data) {
         setState(() {
           if (data.isNotEmpty && data['Global Quote'] != null) {
             _stockData = data;
-            currentPrice = double.tryParse(data['Global Quote']['05. price'] ?? "0");
-            
+            currentPrice =
+                double.tryParse(data['Global Quote']['05. price'] ?? "0");
+
             if (lastPrice != null && currentPrice != null) {
               isPriceUp = currentPrice! > lastPrice!;
               lastPrice = currentPrice;
@@ -71,21 +74,22 @@ class _StockDetailScreenState extends State<StockDetailScreen> with SingleTicker
       }, onError: (error) {
         setState(() {
           _hasError = true;
-          _errorMessage = 'Error in real-time updates. API limit may have been exceeded.';
+          _errorMessage =
+              'Error in real-time updates. API limit may have been exceeded.';
         });
       });
     } catch (e) {
-      // Handle any exception during stream setup
       setState(() {
         _hasError = true;
-        _errorMessage = 'Failed to set up stock updates. API limit may have been exceeded.';
+        _errorMessage =
+            'Failed to set up stock updates. API limit may have been exceeded.';
       });
     }
   }
 
   @override
   void dispose() {
-    _stockStream?.cancel(); // Cancel the stream when the screen is disposed
+    _stockStream?.cancel(); 
     _tabController.dispose();
     super.dispose();
   }
@@ -95,54 +99,65 @@ class _StockDetailScreenState extends State<StockDetailScreen> with SingleTicker
     final stockProvider = Provider.of<StockProvider>(context);
     final stockDetails = stockProvider.stockDetails;
 
-    // Handle API limit exceeded case
     if (_hasError) {
       return _buildErrorScreen();
     }
 
-    // Extract values from stock details - with null safety
-    final symbol = stockDetails.isNotEmpty && stockDetails['Global Quote'] != null
-        ? stockDetails['Global Quote']['01. symbol'] ?? widget.stockSymbol
-        : widget.stockSymbol;
-        
-    final price = stockDetails.isNotEmpty && stockDetails['Global Quote'] != null
-        ? double.tryParse(stockDetails['Global Quote']['05. price'] ?? "0") ?? 0.0
+    final symbol =
+        stockDetails.isNotEmpty && stockDetails['Global Quote'] != null
+            ? stockDetails['Global Quote']['01. symbol'] ?? widget.stockSymbol
+            : widget.stockSymbol;
+
+    final price = stockDetails.isNotEmpty &&
+            stockDetails['Global Quote'] != null
+        ? double.tryParse(stockDetails['Global Quote']['05. price'] ?? "0") ??
+            0.0
         : 0.0;
-        
-    final change = stockDetails.isNotEmpty && stockDetails['Global Quote'] != null
-        ? double.tryParse(stockDetails['Global Quote']['09. change'] ?? "0") ?? 0.0
+
+    final change = stockDetails.isNotEmpty &&
+            stockDetails['Global Quote'] != null
+        ? double.tryParse(stockDetails['Global Quote']['09. change'] ?? "0") ??
+            0.0
         : 0.0;
-        
-    final changePercent = stockDetails.isNotEmpty && stockDetails['Global Quote'] != null
-        ? stockDetails['Global Quote']['10. change percent'] ?? "0%"
-        : "0%";
-        
-    final volume = stockDetails.isNotEmpty && stockDetails['Global Quote'] != null
+
+    final changePercent =
+        stockDetails.isNotEmpty && stockDetails['Global Quote'] != null
+            ? stockDetails['Global Quote']['10. change percent'] ?? "0%"
+            : "0%";
+
+    final volume = stockDetails.isNotEmpty &&
+            stockDetails['Global Quote'] != null
         ? int.tryParse(stockDetails['Global Quote']['06. volume'] ?? "0") ?? 0
         : 0;
-        
-    final prevClose = stockDetails.isNotEmpty && stockDetails['Global Quote'] != null
-        ? double.tryParse(stockDetails['Global Quote']['08. previous close'] ?? "0") ?? 0.0
+
+    final prevClose = stockDetails.isNotEmpty &&
+            stockDetails['Global Quote'] != null
+        ? double.tryParse(
+                stockDetails['Global Quote']['08. previous close'] ?? "0") ??
+            0.0
         : 0.0;
-        
-    final highDay = stockDetails.isNotEmpty && stockDetails['Global Quote'] != null
-        ? double.tryParse(stockDetails['Global Quote']['03. high'] ?? "0") ?? 0.0
+
+    final highDay = stockDetails.isNotEmpty &&
+            stockDetails['Global Quote'] != null
+        ? double.tryParse(stockDetails['Global Quote']['03. high'] ?? "0") ??
+            0.0
         : 0.0;
-        
-    final lowDay = stockDetails.isNotEmpty && stockDetails['Global Quote'] != null
+
+    final lowDay = stockDetails.isNotEmpty &&
+            stockDetails['Global Quote'] != null
         ? double.tryParse(stockDetails['Global Quote']['04. low'] ?? "0") ?? 0.0
         : 0.0;
-        
-    final latestDay = stockDetails.isNotEmpty && stockDetails['Global Quote'] != null
-        ? stockDetails['Global Quote']['07. latest trading day'] ?? "-"
-        : "-";
+
+    final latestDay =
+        stockDetails.isNotEmpty && stockDetails['Global Quote'] != null
+            ? stockDetails['Global Quote']['07. latest trading day'] ?? "-"
+            : "-";
 
     final isPositive = change >= 0;
 
     return Scaffold(
       body: Stack(
         children: [
-          // Background gradient (matching user details screen)
           Container(
             decoration: BoxDecoration(
               gradient: LinearGradient(
@@ -155,13 +170,13 @@ class _StockDetailScreenState extends State<StockDetailScreen> with SingleTicker
               ),
             ),
           ),
-          
+
           SafeArea(
             child: Column(
               children: [
-                // Custom app bar
                 Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 16.0, vertical: 12.0),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
@@ -202,8 +217,7 @@ class _StockDetailScreenState extends State<StockDetailScreen> with SingleTicker
                     ],
                   ),
                 ),
-                
-                // Stock Overview Section
+
                 if (_isLoading)
                   Expanded(
                     child: Center(
@@ -216,7 +230,6 @@ class _StockDetailScreenState extends State<StockDetailScreen> with SingleTicker
                   Expanded(
                     child: Column(
                       children: [
-                        // Stock Title Section
                         Padding(
                           padding: const EdgeInsets.all(16.0),
                           child: Column(
@@ -233,7 +246,9 @@ class _StockDetailScreenState extends State<StockDetailScreen> with SingleTicker
                                     ),
                                     child: Center(
                                       child: Text(
-                                        symbol.length > 2 ? symbol.substring(0, 2) : symbol,
+                                        symbol.length > 2
+                                            ? symbol.substring(0, 2)
+                                            : symbol,
                                         style: TextStyle(
                                           fontWeight: FontWeight.bold,
                                           color: Theme.of(context).primaryColor,
@@ -244,7 +259,8 @@ class _StockDetailScreenState extends State<StockDetailScreen> with SingleTicker
                                   ),
                                   SizedBox(width: 16),
                                   Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
                                     children: [
                                       Text(
                                         symbol,
@@ -266,15 +282,15 @@ class _StockDetailScreenState extends State<StockDetailScreen> with SingleTicker
                                   ),
                                 ],
                               ),
-                              
+
                               SizedBox(height: 24),
-                              
-                              // Price Display
+
                               Row(
                                 crossAxisAlignment: CrossAxisAlignment.end,
                                 children: [
                                   Text(
-                                    currencyFormat.format(currentPrice ?? price),
+                                    currencyFormat
+                                        .format(currentPrice ?? price),
                                     style: TextStyle(
                                       fontSize: 32,
                                       fontWeight: FontWeight.bold,
@@ -285,8 +301,12 @@ class _StockDetailScreenState extends State<StockDetailScreen> with SingleTicker
                                   Row(
                                     children: [
                                       Icon(
-                                        isPositive ? Icons.arrow_upward : Icons.arrow_downward,
-                                        color: isPositive ? Colors.green.shade300 : Colors.red.shade300,
+                                        isPositive
+                                            ? Icons.arrow_upward
+                                            : Icons.arrow_downward,
+                                        color: isPositive
+                                            ? Colors.green.shade300
+                                            : Colors.red.shade300,
                                         size: 16,
                                       ),
                                       SizedBox(width: 4),
@@ -295,28 +315,37 @@ class _StockDetailScreenState extends State<StockDetailScreen> with SingleTicker
                                         style: TextStyle(
                                           fontSize: 16,
                                           fontWeight: FontWeight.w500,
-                                          color: isPositive ? Colors.green.shade300 : Colors.red.shade300,
+                                          color: isPositive
+                                              ? Colors.green.shade300
+                                              : Colors.red.shade300,
                                         ),
                                       ),
                                     ],
                                   ),
                                 ],
                               ),
-                              
+
                               if (isPriceUp != null)
                                 Container(
                                   margin: EdgeInsets.only(top: 8),
-                                  padding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                                  padding: EdgeInsets.symmetric(
+                                      horizontal: 12, vertical: 6),
                                   decoration: BoxDecoration(
-                                    color: isPriceUp! ? Colors.green.withOpacity(0.2) : Colors.red.withOpacity(0.2),
+                                    color: isPriceUp!
+                                        ? Colors.green.withOpacity(0.2)
+                                        : Colors.red.withOpacity(0.2),
                                     borderRadius: BorderRadius.circular(20),
                                   ),
                                   child: Row(
                                     mainAxisSize: MainAxisSize.min,
                                     children: [
                                       Icon(
-                                        isPriceUp! ? Icons.trending_up : Icons.trending_down,
-                                        color: isPriceUp! ? Colors.green : Colors.red,
+                                        isPriceUp!
+                                            ? Icons.trending_up
+                                            : Icons.trending_down,
+                                        color: isPriceUp!
+                                            ? Colors.green
+                                            : Colors.red,
                                         size: 16,
                                       ),
                                       SizedBox(width: 4),
@@ -325,7 +354,9 @@ class _StockDetailScreenState extends State<StockDetailScreen> with SingleTicker
                                         style: TextStyle(
                                           fontSize: 12,
                                           fontWeight: FontWeight.w500,
-                                          color: isPriceUp! ? Colors.green : Colors.red,
+                                          color: isPriceUp!
+                                              ? Colors.green
+                                              : Colors.red,
                                         ),
                                       ),
                                     ],
@@ -334,8 +365,7 @@ class _StockDetailScreenState extends State<StockDetailScreen> with SingleTicker
                             ],
                           ),
                         ),
-                        
-                        // Main Content
+
                         Expanded(
                           child: Container(
                             decoration: BoxDecoration(
@@ -355,45 +385,56 @@ class _StockDetailScreenState extends State<StockDetailScreen> with SingleTicker
                             ),
                             child: Column(
                               children: [
-                                // Tab Bar
                                 Padding(
-                                  padding: const EdgeInsets.fromLTRB(16, 24, 16, 0),
+                                 padding: const EdgeInsets.fromLTRB(16, 24, 16, 0),
                                   child: Container(
                                     height: 50,
                                     decoration: BoxDecoration(
                                       color: Colors.grey.shade100,
                                       borderRadius: BorderRadius.circular(25),
-                                    ),
-                                    child: TabBar(
+                                    ),                                    child: TabBar(
                                       controller: _tabController,
                                       indicator: BoxDecoration(
                                         borderRadius: BorderRadius.circular(25),
                                         color: Theme.of(context).primaryColor,
                                       ),
+                                      indicatorSize: TabBarIndicatorSize
+                                          .tab, 
+                                      labelPadding: EdgeInsets
+                                          .zero,
                                       labelColor: Colors.white,
                                       unselectedLabelColor: Colors.grey.shade700,
-                                      labelStyle: TextStyle(fontWeight: FontWeight.w600),
+                                      labelStyle:
+                                          TextStyle(fontWeight: FontWeight.w600),
                                       tabs: [
-                                        Tab(text: "Overview"),
-                                        Tab(text: "Stats"),
-                                        Tab(text: "News"),
+                                        SizedBox(
+                                          height:
+                                              50, 
+                                          child: Center(child: Text("Overview")),
+                                        ),
+                                        SizedBox(
+                                          height: 50,
+                                          child: Center(child: Text("Stats")),
+                                        ),
+                                        SizedBox(
+                                          height: 50,
+                                          child: Center(child: Text("News")),
+                                        ),
                                       ],
                                     ),
                                   ),
                                 ),
-                                
-                                // Tab Content
+
                                 Expanded(
                                   child: TabBarView(
                                     controller: _tabController,
                                     children: [
-                                      // Overview Tab
-                                      _buildOverviewTab(highDay, lowDay, prevClose, volume),
-                                      
-                                      // Stats Tab
-                                      _buildStatsTab(price, prevClose, volume, change, changePercent),
-                                      
-                                      // News Tab
+                                      _buildOverviewTab(
+                                          highDay, lowDay, prevClose, volume),
+
+                                      _buildStatsTab(price, prevClose, volume,
+                                          change, changePercent),
+
                                       _buildNewsTab(),
                                     ],
                                   ),
@@ -408,8 +449,7 @@ class _StockDetailScreenState extends State<StockDetailScreen> with SingleTicker
               ],
             ),
           ),
-          
-          // Price Change Animation (conditional)
+
           if (isPriceUp != null)
             Positioned(
               top: 180,
@@ -437,9 +477,9 @@ class _StockDetailScreenState extends State<StockDetailScreen> with SingleTicker
         child: SafeArea(
           child: Column(
             children: [
-              // Custom app bar
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
+                padding: const EdgeInsets.symmetric(
+                    horizontal: 16.0, vertical: 12.0),
                 child: Row(
                   children: [
                     InkWell(
@@ -469,7 +509,7 @@ class _StockDetailScreenState extends State<StockDetailScreen> with SingleTicker
                   ],
                 ),
               ),
-              
+
               Expanded(
                 child: Center(
                   child: Container(
@@ -514,15 +554,16 @@ class _StockDetailScreenState extends State<StockDetailScreen> with SingleTicker
                         SizedBox(height: 24),
                         ElevatedButton(
                           onPressed: () => Navigator.pop(context),
-                          child: Text("Go Back"),
                           style: ElevatedButton.styleFrom(
                             backgroundColor: Theme.of(context).primaryColor,
                             foregroundColor: Colors.white,
-                            padding: EdgeInsets.symmetric(horizontal: 32, vertical: 12),
+                            padding: EdgeInsets.symmetric(
+                                horizontal: 32, vertical: 12),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(8),
                             ),
                           ),
+                          child: Text("Go Back"),
                         ),
                       ],
                     ),
@@ -543,7 +584,9 @@ class _StockDetailScreenState extends State<StockDetailScreen> with SingleTicker
       width: 40,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
-        color: isPriceUp! ? Colors.green.withOpacity(0.2) : Colors.red.withOpacity(0.2),
+        color: isPriceUp!
+            ? Colors.green.withOpacity(0.2)
+            : Colors.red.withOpacity(0.2),
       ),
       child: Center(
         child: Icon(
@@ -555,7 +598,8 @@ class _StockDetailScreenState extends State<StockDetailScreen> with SingleTicker
     );
   }
 
-  Widget _buildOverviewTab(double highDay, double lowDay, double prevClose, int volume) {
+  Widget _buildOverviewTab(
+      double highDay, double lowDay, double prevClose, int volume) {
     return SingleChildScrollView(
       padding: EdgeInsets.all(24),
       child: Column(
@@ -569,8 +613,7 @@ class _StockDetailScreenState extends State<StockDetailScreen> with SingleTicker
             ),
           ),
           SizedBox(height: 16),
-          
-          // Price Summary Cards
+
           Row(
             children: [
               Expanded(
@@ -614,7 +657,7 @@ class _StockDetailScreenState extends State<StockDetailScreen> with SingleTicker
               ),
             ],
           ),
-          
+
           SizedBox(height: 32),
           Text(
             "Performance Chart",
@@ -624,8 +667,7 @@ class _StockDetailScreenState extends State<StockDetailScreen> with SingleTicker
             ),
           ),
           SizedBox(height: 16),
-          
-          // Mock Chart
+
           Container(
             height: 200,
             width: double.infinity,
@@ -641,7 +683,7 @@ class _StockDetailScreenState extends State<StockDetailScreen> with SingleTicker
               ),
             ),
           ),
-          
+
           SizedBox(height: 32),
           Text(
             "About",
@@ -663,7 +705,8 @@ class _StockDetailScreenState extends State<StockDetailScreen> with SingleTicker
     );
   }
 
-  Widget _buildStatsTab(double price, double prevClose, int volume, double change, String changePercent) {
+  Widget _buildStatsTab(double price, double prevClose, int volume,
+      double change, String changePercent) {
     return SingleChildScrollView(
       padding: EdgeInsets.all(24),
       child: Column(
@@ -677,7 +720,6 @@ class _StockDetailScreenState extends State<StockDetailScreen> with SingleTicker
             ),
           ),
           SizedBox(height: 16),
-          
           _buildStatRow("Current Price", currencyFormat.format(price)),
           _buildStatRow("Previous Close", currencyFormat.format(prevClose)),
           _buildStatRow("Day Change", change.toStringAsFixed(2)),
@@ -690,7 +732,6 @@ class _StockDetailScreenState extends State<StockDetailScreen> with SingleTicker
           _buildStatRow("52-Week Low", "₹ 1,356.00"),
           _buildStatRow("Beta", "1.15"),
           _buildStatRow("EPS", "₹ 78.65"),
-          
           SizedBox(height: 32),
           Text(
             "Technical Indicators",
@@ -700,7 +741,6 @@ class _StockDetailScreenState extends State<StockDetailScreen> with SingleTicker
             ),
           ),
           SizedBox(height: 16),
-          
           _buildStatRow("RSI (14)", "58.23"),
           _buildStatRow("MACD", "5.67"),
           _buildStatRow("20-Day MA", currencyFormat.format(price - 15)),
@@ -712,7 +752,6 @@ class _StockDetailScreenState extends State<StockDetailScreen> with SingleTicker
   }
 
   Widget _buildNewsTab() {
-    // Mock news data
     List<Map<String, dynamic>> newsItems = [
       {
         "title": "Q4 Results: Profits Exceed Expectations",
@@ -820,7 +859,8 @@ class _StockDetailScreenState extends State<StockDetailScreen> with SingleTicker
     );
   }
 
-  Widget _buildInfoCard(String title, String value, IconData icon, Color color) {
+  Widget _buildInfoCard(
+      String title, String value, IconData icon, Color color) {
     return Container(
       padding: EdgeInsets.all(16),
       decoration: BoxDecoration(

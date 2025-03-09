@@ -42,7 +42,6 @@ class _UserDetailsScreenState extends State<UserDetailsScreen> {
         'createdAt': FieldValue.serverTimestamp(),
       });
 
-      // Navigate to HomeScreen after saving details
       Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => HomeScreen()));
     } catch (e) {
       setState(() => _isLoading = false);
@@ -61,7 +60,6 @@ class _UserDetailsScreenState extends State<UserDetailsScreen> {
     return Scaffold(
       body: Stack(
         children: [
-          // Background gradient (matching login screen)
           Container(
             decoration: BoxDecoration(
               gradient: LinearGradient(
@@ -75,7 +73,6 @@ class _UserDetailsScreenState extends State<UserDetailsScreen> {
             ),
           ),
           
-          // Main content
           SafeArea(
             child: SingleChildScrollView(
               child: Padding(
@@ -85,7 +82,6 @@ class _UserDetailsScreenState extends State<UserDetailsScreen> {
                   children: [
                     SizedBox(height: 40),
                     
-                    // Profile icon
                     Container(
                       alignment: Alignment.center,
                       child: Stack(
@@ -135,7 +131,6 @@ class _UserDetailsScreenState extends State<UserDetailsScreen> {
                     
                     SizedBox(height: 30),
                     
-                    // Title text
                     Text(
                       "Complete Your Profile",
                       style: TextStyle(
@@ -159,7 +154,6 @@ class _UserDetailsScreenState extends State<UserDetailsScreen> {
                     
                     SizedBox(height: 40),
                     
-                    // Form in a card
                     Container(
                       decoration: BoxDecoration(
                         color: Colors.white,
@@ -178,7 +172,6 @@ class _UserDetailsScreenState extends State<UserDetailsScreen> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.stretch,
                           children: [
-                            // Name field
                             TextField(
                               controller: _nameController,
                               style: TextStyle(fontSize: 16),
@@ -197,7 +190,6 @@ class _UserDetailsScreenState extends State<UserDetailsScreen> {
                             
                             SizedBox(height: 16),
                             
-                            // Phone field
                             TextField(
                               controller: _phoneController,
                               keyboardType: TextInputType.phone,
@@ -217,7 +209,6 @@ class _UserDetailsScreenState extends State<UserDetailsScreen> {
                             
                             SizedBox(height: 16),
                             
-                            // Address field
                             TextField(
                               controller: _addressController,
                               style: TextStyle(fontSize: 16),
@@ -236,7 +227,6 @@ class _UserDetailsScreenState extends State<UserDetailsScreen> {
                             
                             SizedBox(height: 16),
                             
-                            // Bio field
                             TextField(
                               controller: _bioController,
                               maxLines: 3,
@@ -260,9 +250,16 @@ class _UserDetailsScreenState extends State<UserDetailsScreen> {
                             
                             SizedBox(height: 24),
                             
-                            // Save button
                             ElevatedButton(
                               onPressed: _isLoading ? null : _saveUserDetails,
+                              style: ElevatedButton.styleFrom(
+                                foregroundColor: Colors.white,
+                                backgroundColor: Theme.of(context).primaryColor,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                padding: EdgeInsets.symmetric(vertical: 16),
+                              ),
                               child: _isLoading
                                   ? SizedBox(
                                       height: 20,
@@ -279,14 +276,6 @@ class _UserDetailsScreenState extends State<UserDetailsScreen> {
                                         fontWeight: FontWeight.bold,
                                       ),
                                     ),
-                              style: ElevatedButton.styleFrom(
-                                foregroundColor: Colors.white,
-                                backgroundColor: Theme.of(context).primaryColor,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                                padding: EdgeInsets.symmetric(vertical: 16),
-                              ),
                             ),
                           ],
                         ),
@@ -295,7 +284,6 @@ class _UserDetailsScreenState extends State<UserDetailsScreen> {
                     
                     SizedBox(height: 24),
                     
-                    // Skip for now link
                     TextButton(
                       onPressed: () {
                         Navigator.pushReplacement(

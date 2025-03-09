@@ -28,17 +28,6 @@ class ProfileScreen extends StatelessWidget {
         backgroundColor: Colors.white,
         foregroundColor: Colors.black87,
         title: Text("My Profile", style: TextStyle(fontWeight: FontWeight.bold)),
-        actions: [
-          IconButton(
-            icon: Icon(Icons.edit_outlined),
-            onPressed: () {
-              // Navigate to edit profile screen
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text("Edit profile coming soon"))
-              );
-            },
-          )
-        ],
       ),
       body: FutureBuilder(
         future: _fetchUserData(),
@@ -61,7 +50,6 @@ class ProfileScreen extends StatelessWidget {
                   SizedBox(height: 16),
                   ElevatedButton(
                     onPressed: () {
-                      // Refresh data
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(content: Text("Refreshing data..."))
                       );
@@ -86,7 +74,6 @@ class ProfileScreen extends StatelessWidget {
           return SingleChildScrollView(
             child: Column(
               children: [
-                // Profile header section with avatar
                 Container(
                   width: double.infinity,
                   decoration: BoxDecoration(
@@ -107,7 +94,6 @@ class ProfileScreen extends StatelessWidget {
                   child: Column(
                     children: [
                       SizedBox(height: 20),
-                      // Profile avatar
                       Container(
                         height: 120,
                         width: 120,
@@ -134,7 +120,6 @@ class ProfileScreen extends StatelessWidget {
                             : null,
                       ),
                       SizedBox(height: 16),
-                      // User name
                       Text(
                         name,
                         style: TextStyle(
@@ -144,7 +129,6 @@ class ProfileScreen extends StatelessWidget {
                         ),
                       ),
                       SizedBox(height: 8),
-                      // User ID in a small badge
                       Container(
                         padding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                         decoration: BoxDecoration(
@@ -163,7 +147,6 @@ class ProfileScreen extends StatelessWidget {
                 
                 SizedBox(height: 24),
                 
-                // User information cards
                 Padding(
                   padding: EdgeInsets.symmetric(horizontal: 16),
                   child: Column(
@@ -179,7 +162,6 @@ class ProfileScreen extends StatelessWidget {
                       ),
                       SizedBox(height: 16),
                       
-                      // Contact info cards
                       _buildInfoCard(
                         context: context,
                         icon: Icons.email_outlined,
@@ -196,7 +178,6 @@ class ProfileScreen extends StatelessWidget {
                         subtitle: phone,
                       ),
                       
-                      // Additional user data if available
                       if (userData['address'] != null) ...[
                         SizedBox(height: 12),
                         _buildInfoCard(
@@ -219,16 +200,11 @@ class ProfileScreen extends StatelessWidget {
                       
                       SizedBox(height: 24),
                       
-                      // Action buttons
                       Row(
                         children: [
                           Expanded(
                             child: ElevatedButton.icon(
                               onPressed: () {
-                                // Sign out logic
-                                // ScaffoldMessenger.of(context).showSnackBar(
-                                //   SnackBar(content: Text("Signing out..."))
-                                // );
                                 _logout(context);
                               },
                               icon: Icon(Icons.logout),

@@ -29,7 +29,6 @@ class _HomeScreenState extends State<HomeScreen> {
     return Scaffold(
       body: Stack(
         children: [
-          // Background gradient (matching user details screen)
           Container(
             decoration: BoxDecoration(
               gradient: LinearGradient(
@@ -47,7 +46,6 @@ class _HomeScreenState extends State<HomeScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Custom app bar
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
                   child: Row(
@@ -63,18 +61,6 @@ class _HomeScreenState extends State<HomeScreen> {
                       ),
                       Row(
                         children: [
-                          // Container(
-                          //   decoration: BoxDecoration(
-                          //     color: Colors.white.withOpacity(0.2),
-                          //     shape: BoxShape.circle,
-                          //   ),
-                          //   child: IconButton(
-                          //     icon: Icon(Icons.notifications_outlined, color: Colors.white),
-                          //     onPressed: () {
-                          //       // Notification functionality
-                          //     },
-                          //   ),
-                          // ),
                           SizedBox(width: 8),
                           GestureDetector(
                             onTap: () {
@@ -107,7 +93,6 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                 ),
                 
-                // Search Section
                 Padding(
                   padding: const EdgeInsets.all(16.0),
                   child: Column(
@@ -172,7 +157,6 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                 ),
                 
-                // Main Content
                 Expanded(
                   child: Container(
                     decoration: BoxDecoration(
@@ -232,7 +216,6 @@ class _HomeScreenState extends State<HomeScreen> {
                                       );
                                     }
                             
-                                    // Generate random color and trend data for demo purposes
                                     final bool isPositive = index % 3 != 0;
                                     final double changePercent = (index % 5 + 1) * (isPositive ? 1.2 : -0.8);
                                     
@@ -311,26 +294,6 @@ class _HomeScreenState extends State<HomeScreen> {
                                                 ),
                                               ),
                                               SizedBox(width: 16),
-                                              // Column(
-                                              //   crossAxisAlignment: CrossAxisAlignment.end,
-                                              //   children: [
-                                              //     Text(
-                                              //       "\Rs.${(100 + index * 5).toString()}",
-                                              //       style: TextStyle(
-                                              //         fontWeight: FontWeight.bold,
-                                              //         fontSize: 16,
-                                              //       ),
-                                              //     ),
-                                              //     SizedBox(height: 4),
-                                              //     Text(
-                                              //       "${changePercent.toStringAsFixed(2)}%",
-                                              //       style: TextStyle(
-                                              //         color: isPositive ? Colors.green : Colors.red,
-                                              //         fontWeight: FontWeight.w500,
-                                              //       ),
-                                              //     ),
-                                              //   ],
-                                              // ),
                                             ],
                                           ),
                                         ),

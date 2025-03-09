@@ -4,12 +4,29 @@ import 'package:http/http.dart' as http;
 import 'dart:math';
 
 class StockApiService {
-  // static const String apiKey = 'JEA4DZIJGNCLAPZC';
-  // static const String apiKey = 'Q8UMH5T65ZZIG1ON';
-  static const String apiKey = '7RKYYRCVCDCIVL08';
+  static const List<String> apiKeys = [
+    'JEA4DZIJGNCLAPZC',
+    'Q8UMH5T65ZZIG1ON',
+    '7RKYYRCVCDCIVL08',
+    'HXOAVG0I396LMWB6',
+    'OFN1OFMYO2F16B5L',
+    'P9LR98KVB5KDS3IZ',
+    '4IZRGSWC5402E2XF',
+    'I4L5VLSYB706A3TM',
+    '9D577SF8QUJNSXZP',
+    'SALQWNB49TURU63D',
+    'YYH79M3LLQIF0OGZ'
+  ];
+  static int _currentApiKeyIndex = 0;
   static const String baseUrl = 'https://www.alphavantage.co/query';
 
   final Map<String, dynamic> _cache = {};
+
+  String get apiKey => apiKeys[_currentApiKeyIndex];
+
+  void _rotateApiKey() {
+    _currentApiKeyIndex = (_currentApiKeyIndex + 1) % apiKeys.length;
+  }
 
   Future<List<Map<String, String>>> searchStockByName(String query) async {
     if (_cache.containsKey('search_$query')) {
@@ -24,11 +41,12 @@ class StockApiService {
       final data = json.decode(response.body);
 
       if (data.containsKey('Information')) {
+        _rotateApiKey();
         return [
           {
             'symbol': 'N/A',
             'name':
-                'You have reached your daily search limit of 25 requests per day. Please try again tomorrow.'
+                'You have reached your daily search limit. Trying another API key...'
           }
         ];
       }
@@ -43,6 +61,8 @@ class StockApiService {
         _cache['search_$query'] = results;
         return results;
       }
+    } else {
+      _rotateApiKey();
     }
     return [];
   }
@@ -61,6 +81,7 @@ class StockApiService {
       _cache['stock_$symbol'] = data;
       return data;
     } else {
+      _rotateApiKey();
       throw Exception('Failed to load stock data');
     }
   }
@@ -87,15 +108,47 @@ class StockApiService {
     return results;
   }
 
+//test tomorrow
+  // Stream<Map<String, dynamic>> getRealTimeStockUpdates(String symbol) async* {
+  //   while (true) {
+  //     await Future.delayed(
+  //         Duration(seconds: 10)); // Fetch update every 10 seconds
+
+  //     try {
+  //       final stockData = await fetchStockData(symbol);
+  //       if (stockData.isNotEmpty && stockData['Global Quote'] != null) {
+  //         yield stockData;
+  //       } else {
+  //         throw Exception('Invalid stock data');
+  //       }
+  //     } catch (e) {
+  //       yield {
+  //         "error":
+  //             "Failed to fetch real-time stock updates. API limit may have been exceeded."
+  //       };
+  //     }
+  //   }
+  // }
+
   Stream<Map<String, dynamic>> getRealTimeStockUpdates(String symbol) async* {
     Random random = Random();
-    double lastPrice = random.nextDouble() * 1000; // Initial random price
+    double lastPrice = 100;
+    
+    try {
+      final stockData = await fetchStockData(symbol);
+      if (stockData.containsKey("Global Quote") && stockData["Global Quote"].containsKey("05. price")) {
+        lastPrice = double.tryParse(stockData["Global Quote"]["05. price"]) ?? 100;
+      }
+    // ignore: empty_catches
+    } catch (e) {
+      
+    }
 
     while (true) {
-      await Future.delayed(Duration(seconds: 2)); // Simulate updates every 2s
+      await Future.delayed(Duration(seconds: 2)); 
 
-      double priceChange = (random.nextDouble() * 10 - 5); // Random change (-5 to +5)
-      lastPrice += priceChange;
+      double priceChange = (random.nextDouble() * 2 - 1) * 0.5; 
+      lastPrice += lastPrice * priceChange / 100;
 
       yield {
         "Global Quote": {

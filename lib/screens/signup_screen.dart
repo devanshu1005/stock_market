@@ -10,14 +10,14 @@ class SignupScreen extends StatefulWidget {
 class _SignupScreenState extends State<SignupScreen> {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
-  final TextEditingController _confirmPasswordController = TextEditingController();
+  final TextEditingController _confirmPasswordController =
+      TextEditingController();
   final FirebaseAuth _auth = FirebaseAuth.instance;
   bool _isLoading = false;
   bool _obscurePassword = true;
   bool _obscureConfirmPassword = true;
 
   void _signup() async {
-    // Basic validation
     if (_emailController.text.trim().isEmpty ||
         _passwordController.text.trim().isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -52,7 +52,6 @@ class _SignupScreenState extends State<SignupScreen> {
 
       String userId = userCredential.user!.uid;
 
-      // Navigate to UserDetailsScreen to collect additional user data
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(
@@ -70,12 +69,17 @@ class _SignupScreenState extends State<SignupScreen> {
     }
   }
 
+  bool _isValidEmail(String email) {
+    final emailRegex =
+        RegExp(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$');
+    return emailRegex.hasMatch(email);
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: Stack(
         children: [
-          // Background gradient (matching login screen)
           Container(
             decoration: BoxDecoration(
               gradient: LinearGradient(
@@ -88,8 +92,7 @@ class _SignupScreenState extends State<SignupScreen> {
               ),
             ),
           ),
-          
-          // Back button
+
           SafeArea(
             child: Padding(
               padding: const EdgeInsets.all(8.0),
@@ -99,8 +102,7 @@ class _SignupScreenState extends State<SignupScreen> {
               ),
             ),
           ),
-          
-          // Main content
+
           SafeArea(
             child: SingleChildScrollView(
               child: Padding(
@@ -109,8 +111,7 @@ class _SignupScreenState extends State<SignupScreen> {
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     SizedBox(height: 60),
-                    
-                    // App logo or icon - matching login screen
+
                     Container(
                       alignment: Alignment.center,
                       child: Container(
@@ -135,10 +136,9 @@ class _SignupScreenState extends State<SignupScreen> {
                         ),
                       ),
                     ),
-                    
+
                     SizedBox(height: 30),
-                    
-                    // Welcome text
+
                     Text(
                       "Create Account",
                       style: TextStyle(
@@ -148,9 +148,9 @@ class _SignupScreenState extends State<SignupScreen> {
                       ),
                       textAlign: TextAlign.center,
                     ),
-                    
+
                     SizedBox(height: 8),
-                    
+
                     Text(
                       "Sign up to get started",
                       style: TextStyle(
@@ -159,10 +159,9 @@ class _SignupScreenState extends State<SignupScreen> {
                       ),
                       textAlign: TextAlign.center,
                     ),
-                    
+
                     SizedBox(height: 40),
-                    
-                    // Signup form in a card - matching login screen style
+
                     Container(
                       decoration: BoxDecoration(
                         color: Colors.white,
@@ -181,7 +180,6 @@ class _SignupScreenState extends State<SignupScreen> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.stretch,
                           children: [
-                            // Email field
                             TextField(
                               controller: _emailController,
                               keyboardType: TextInputType.emailAddress,
@@ -195,13 +193,20 @@ class _SignupScreenState extends State<SignupScreen> {
                                 ),
                                 filled: true,
                                 fillColor: Colors.grey.shade100,
-                                contentPadding: EdgeInsets.symmetric(vertical: 16),
+                                contentPadding:
+                                    EdgeInsets.symmetric(vertical: 16),
+                                errorText: _isValidEmail(_emailController.text)
+                                    ? null
+                                    : "Enter a valid email",
                               ),
+                              onChanged: (value) {
+                                setState(
+                                    () {}); 
+                              },
                             ),
-                            
+
                             SizedBox(height: 16),
-                            
-                            // Password field
+
                             TextField(
                               controller: _passwordController,
                               obscureText: _obscurePassword,
@@ -211,7 +216,9 @@ class _SignupScreenState extends State<SignupScreen> {
                                 prefixIcon: Icon(Icons.lock_outline),
                                 suffixIcon: IconButton(
                                   icon: Icon(
-                                    _obscurePassword ? Icons.visibility_off : Icons.visibility,
+                                    _obscurePassword
+                                        ? Icons.visibility_off
+                                        : Icons.visibility,
                                     color: Colors.grey,
                                   ),
                                   onPressed: () {
@@ -226,13 +233,13 @@ class _SignupScreenState extends State<SignupScreen> {
                                 ),
                                 filled: true,
                                 fillColor: Colors.grey.shade100,
-                                contentPadding: EdgeInsets.symmetric(vertical: 16),
+                                contentPadding:
+                                    EdgeInsets.symmetric(vertical: 16),
                               ),
                             ),
-                            
+
                             SizedBox(height: 16),
-                            
-                            // Confirm Password field
+
                             TextField(
                               controller: _confirmPasswordController,
                               obscureText: _obscureConfirmPassword,
@@ -242,12 +249,15 @@ class _SignupScreenState extends State<SignupScreen> {
                                 prefixIcon: Icon(Icons.lock_outline),
                                 suffixIcon: IconButton(
                                   icon: Icon(
-                                    _obscureConfirmPassword ? Icons.visibility_off : Icons.visibility,
+                                    _obscureConfirmPassword
+                                        ? Icons.visibility_off
+                                        : Icons.visibility,
                                     color: Colors.grey,
                                   ),
                                   onPressed: () {
                                     setState(() {
-                                      _obscureConfirmPassword = !_obscureConfirmPassword;
+                                      _obscureConfirmPassword =
+                                          !_obscureConfirmPassword;
                                     });
                                   },
                                 ),
@@ -257,22 +267,32 @@ class _SignupScreenState extends State<SignupScreen> {
                                 ),
                                 filled: true,
                                 fillColor: Colors.grey.shade100,
-                                contentPadding: EdgeInsets.symmetric(vertical: 16),
+                                contentPadding:
+                                    EdgeInsets.symmetric(vertical: 16),
                               ),
                             ),
-                            
+
                             SizedBox(height: 24),
-                            
-                            // Signup button
+
                             ElevatedButton(
                               onPressed: _isLoading ? null : _signup,
+                              style: ElevatedButton.styleFrom(
+                                foregroundColor: Colors.white,
+                                backgroundColor: Theme.of(context).primaryColor,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                padding: EdgeInsets.symmetric(vertical: 16),
+                              ),
                               child: _isLoading
                                   ? SizedBox(
                                       height: 20,
                                       width: 20,
                                       child: CircularProgressIndicator(
                                         strokeWidth: 2,
-                                        valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                                        valueColor:
+                                            AlwaysStoppedAnimation<Color>(
+                                                Colors.white),
                                       ),
                                     )
                                   : Text(
@@ -282,23 +302,14 @@ class _SignupScreenState extends State<SignupScreen> {
                                         fontWeight: FontWeight.bold,
                                       ),
                                     ),
-                              style: ElevatedButton.styleFrom(
-                                foregroundColor: Colors.white,
-                                backgroundColor: Theme.of(context).primaryColor,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                                padding: EdgeInsets.symmetric(vertical: 16),
-                              ),
                             ),
                           ],
                         ),
                       ),
                     ),
-                    
+
                     SizedBox(height: 24),
-                    
-                    // Login link
+
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
@@ -321,7 +332,7 @@ class _SignupScreenState extends State<SignupScreen> {
                         ),
                       ],
                     ),
-                    
+
                     SizedBox(height: 24),
                   ],
                 ),
