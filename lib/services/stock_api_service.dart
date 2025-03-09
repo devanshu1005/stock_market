@@ -108,7 +108,7 @@ class StockApiService {
     return results;
   }
 
-//test tomorrow
+  //Commented this out because of the existing 25 call per day limit
   // Stream<Map<String, dynamic>> getRealTimeStockUpdates(String symbol) async* {
   //   while (true) {
   //     await Future.delayed(
